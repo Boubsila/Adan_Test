@@ -1,0 +1,78 @@
+<div class="container row m-3 p-3 bg-dark d-flex justify-content-center align-items-center  custom-background">
+
+  <div class="header d-flex justify-content-between align-items-start  ">
+
+    <div class="d-flex flex-column align-items-start bg-primary">
+      <h3 class="text text-white  m-2">{{Hours}}</h3>
+      <h3 class="text text-white  m-2">{{date2}}</h3>
+    </div>
+
+
+    <div class="d-flex flex-column align-items-center bg-primary asameHusna">
+      <h3 class="card-title text-white  m-1">{{name2}}</h3>
+      <h3 class="card-title text-white  m-1">{{transliteration2}}</h3>
+      <h3 class="card-title text-white  m-1">{{meaning2}}</h3>
+    </div>
+
+  </div>
+
+  <div class="d-flex align-items-center flex-column m-10px">
+    <h4 class="text text-white bg-primary text-center  p-5 "><span>{{hijriYear}} {{hijriWeekday}} {{hijriDay}}
+        {{hijriMonth}}</span></h4>
+  </div>
+
+  <div class="card text-white m-1" style="width: 12rem;"
+    [ngClass]="PrayerTimes() == 'وقت صلاة العشاء' ? 'bg-warning' : 'bg-danger'">
+    <div class="card-body ">
+      <h4 class="card-title text-center m-4">العشاء</h4>
+      <h1 class="card-subtitle mb-2  text-center">{{ isha }}</h1>
+      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة العشاء'">{{istime}}</p>
+
+    </div>
+  </div>
+
+  <div class="card text-white m-1" style="width: 12rem;"
+    [ngClass]="PrayerTimes() == 'وقت صلاة المغرب' ? 'bg-primary' : 'bg-danger'">
+    <div class="card-body ">
+      <h4 class="card-title text-center m-4">المغرب</h4>
+      <h1 class="card-subtitle mb-2  text-center">{{ maghrib }}</h1>
+      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة المغرب'">{{istime}}</p>
+
+    </div>
+  </div>
+
+
+  <div class="card text-white m-1" style="width: 12rem;"
+    [ngClass]="PrayerTimes() == 'وقت صلاة العصر' ? 'bg-primary' : 'bg-danger'">
+    <div class="card-body ">
+      <h4 class="card-title text-center m-4">العصر</h4>
+      <h1 class="card-subtitle mb-2  text-center">{{ asr }}</h1>
+      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة العصر'">{{istime}}</p>
+
+    </div>
+  </div>
+
+  <div class="card text-white m-1" style="width: 12rem;"
+    [ngClass]="PrayerTimes() == 'وقت صلاة الضهر' ? 'bg-primary' : 'bg-danger'">
+    <div class="card-body ">
+      <h4 class="card-title text-center m-4">الضهر</h4>
+      <h1 class="card-subtitle mb-2  text-center">{{ dhuhr }}</h1>
+      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة الضهر'">{{istime}}</p>
+
+    </div>
+  </div>
+  <div class="card text-white m-2" style="width: 12rem;"
+    [ngClass]="PrayerTimes() == 'وقت صلاة الفجر' ? 'bg-primary' : 'bg-danger'">
+    <div class="card-body ">
+      <h4 class="card-title text-center m-4">الفجر</h4>
+      <h1 class="card-subtitle mb-2  text-center">{{ fajr }}</h1>
+      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة الفجر'">{{istime}}</p>
+
+    </div>
+  </div>
+
+
+
+
+
+</div>
