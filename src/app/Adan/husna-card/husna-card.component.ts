@@ -1,143 +1,182 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { HusnaCardService } from '../../services/husna-card.service';
 
 @Component({
   selector: 'app-husna-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './husna-card.component.html',
-  styleUrl: './husna-card.component.css'
+  styleUrls: ['./husna-card.component.css']
 })
 export class HusnaCardComponent implements OnInit {
-
-  counter = 1;
-  name: string = '';
-  transliteration: string = '';
-  meaning: string= '';
-  name2: string = '';
-  transliteration2: string = '';
-  meaning2: string= '';
-  date = new Date();
-  hours= this.date.getHours().toString().padStart(2, '0');
-  minutes = this.date.getMinutes().toString().padStart(2, '0');
-  seconds = this.date.getSeconds().toString().padStart(2, '0');
-  Hours = this.hours + ' : ' + this.minutes + ' : ' + this.seconds;
-  PrayerT= this.hours+':'+this.minutes;
-  city = 'antwerp';
-  country = 'belguim';
+  // Time and Date
+  currentTime = '';
+  gregorianDate = '';
+  hijriDate = '';
+  country = 'Belgium';
   method = 3;
-  date2='';
+
+  // City selection
+  selectedCity = 'antwerp';
+  cities = [
+    { name: 'Anvers', value: 'antwerp' },
+    { name: 'Bruxelles', value: 'brussels' },
+    { name: 'Paris', value: 'paris' },
+    { name: 'Londres', value: 'london' },
+    { name: 'Dubai', value: 'dubai' },
+    { name: 'Istanbul', value: 'istanbul' },
+    { name: 'Casablanca', value: 'casablanca' },
+    { name: 'Alger', value: 'algiers' },
+    { name: 'Tunis', value: 'tunis' },
+    { name: 'Mekkah', value: 'makkah' }
+  ];
+
+  // Asma ul Husna
+  husnaName = '';
+  husnaTransliteration = '';
+  husnaMeaning = '';
+
+  // Prayer Times
   fajr = '';
   dhuhr = '';
   asr = '';
   maghrib = '';
   isha = '';
-  hijriWeekday = '';
-  hijriMonth = '';
-  hijriYear = '';
-  hijriDay = '';
-  count:number =0;
-  istime = '';
-  
+  activePrayer = '';
 
-  constructor(private husna: HusnaCardService) {}
+  constructor(private husnaService: HusnaCardService) {}
 
   ngOnInit(): void {
+    this.loadHusnaRotation();
+    this.updateTimeEverySecond();
+    this.fetchPrayerTimes();
+  }
 
-
+  // Updates time every second
+  updateTimeEverySecond() {
     setInterval(() => {
-      this.date = new Date();
-      this.hours= this.date.getHours().toString().padStart(2, '0');
-      this.minutes = this.date.getMinutes().toString().padStart(2, '0');
-      this.seconds = this.date.getSeconds().toString().padStart(2, '0');
-      this.Hours = this.hours + ' : ' + this.minutes + ' : ' + this.seconds;
-      this.PrayerT= this.hours+':'+this.minutes;
-      this.istime=this.PrayerTimes();
-
-    }, 1000);
-
-   
-  
-
-    this.husna.getmawaqit(this.city, this.country, this.method).subscribe((d: any) => {
-      this.date2 = d['data']['date']['gregorian']['date'],
-      this.fajr = d['data']['timings']['Fajr'],
-      this.dhuhr = d['data']['timings']['Dhuhr'],
-      this.asr = d['data']['timings']['Asr'],
-      this.maghrib = d['data']['timings']['Maghrib'],
-      this.isha = d['data']['timings']['Isha'],
-      this.hijriWeekday = d['data']['date']['hijri']['weekday']['ar'],
-      this.hijriMonth = d['data']['date']['hijri']['month']['ar'],
-      this.hijriYear = d['data']['date']['hijri']['year'];
-      this.hijriDay = d['data']['date']['hijri']['day'];
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      this.currentTime = `${hours}:${minutes}:${seconds}`;
       
-      
-    });
-
-    
-   
-    
-    this.husna.getHusna(this.counter).subscribe((d: any) => {
-      this.name = d['data'][0].name,
-      this.transliteration = d['data'][0].transliteration,
-      this.meaning = d['data'][0].en['meaning'];
-    });
-
-
-    setInterval(() => {
-      this.count=this.count+1;
-      if (this.count> 99) {
-        this.count = 1;
-      }
-
-      this.husna.getHusna(this.count).subscribe((d: any) => {
-        this.name2 = d['data'][0].name,
-        this.transliteration2 = d['data'][0].transliteration,
-        this.meaning2 = d['data'][0].en['meaning'];
-        
+      // Update Gregorian date
+      this.gregorianDate = now.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
-    }
-
-      , 3000);
-
       
+      this.updateActivePrayer(`${hours}:${minutes}`);
+    }, 1000);
   }
 
-  PrayerTimes():string{
-    if(this.PrayerT >=this.fajr && this.PrayerT < this.dhuhr){
-      return "وقت صلاة الفجر";
-    }else if(this.PrayerT >=this.dhuhr && this.PrayerT < this.asr){
-      return "وقت صلاة الضهر";
-    }else if(this.PrayerT >=this.asr && this.PrayerT < this.maghrib){
-      return "وقت صلاة العصر";
-    }else if(this.PrayerT >=this.maghrib && this.PrayerT < this.isha){
-      return "وقت صلاة المغرب";
-    }else {
-      
-      return "وقت صلاة العشاء";
-    }
-   
+  // Rotates through names every 3 seconds
+  loadHusnaRotation() {
+    let counter = 1;
+    this.fetchHusna(counter); // First call
+
+    setInterval(() => {
+      counter = counter < 99 ? counter + 1 : 1;
+      this.fetchHusna(counter);
+    }, 3000);
   }
 
-  // PrayerTimes():string{
-  //   if( this.PrayerT < this.dhuhr){
-  //     return "وقت صلاة الفجر";
-  //   }
-  //   if( this.PrayerT < this.asr){
-  //     return "وقت صلاة الضهر";
-  //   }
-  //   if( this.PrayerT < this.maghrib){
-  //     return "وقت صلاة العصر";
-  //   }if
-  //   ( this.PrayerT < this.isha){
-  //     return "وقت صلاة المغرب";
-  //   }else {
-      
-  //     return "وقت صلاة العشاء";
-  //   }
-   
-  // }
-  
-  
+  fetchHusna(id: number) {
+    this.husnaService.getHusna(id).subscribe({
+      next: (data) => {
+        const husna = data?.data?.[0];
+        if (husna) {
+          this.husnaName = husna.name;
+          this.husnaTransliteration = husna.transliteration;
+          this.husnaMeaning = husna.en?.meaning;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching Asma ul Husna:', err);
+      }
+    });
+  }
+
+  fetchPrayerTimes() {
+    this.husnaService.getmawaqit(this.selectedCity, this.country, this.method).subscribe({
+      next: (data) => {
+        const timings = data.data.timings;
+        const hijri = data.data.date.hijri;
+        const gregorian = data.data.date.gregorian;
+
+        this.fajr = this.formatTime(timings.Fajr);
+        this.dhuhr = this.formatTime(timings.Dhuhr);
+        this.asr = this.formatTime(timings.Asr);
+        this.maghrib = this.formatTime(timings.Maghrib);
+        this.isha = this.formatTime(timings.Isha);
+
+        this.hijriDate = `${hijri.weekday.ar} ${hijri.day} ${hijri.month.ar} ${hijri.year}`;
+        
+        // Update country if available
+        if (data.data.meta?.timezone) {
+          const parts = data.data.meta.timezone.split('/');
+          if (parts.length > 1) {
+            this.country = parts[1].replace(/_/g, ' ');
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching prayer times:', err);
+      }
+    });
+  }
+
+  formatTime(time: string): string {
+    return time.split(' ')[0]; // Remove timezone if exists
+  }
+
+  onCityChange() {
+    this.fetchPrayerTimes();
+  }
+
+  updateActivePrayer(current: string) {
+    if (!this.fajr || !this.dhuhr || !this.asr || !this.maghrib || !this.isha) return;
+
+    const currentTime = this.timeToMinutes(current);
+    const fajrTime = this.timeToMinutes(this.fajr);
+    const dhuhrTime = this.timeToMinutes(this.dhuhr);
+    const asrTime = this.timeToMinutes(this.asr);
+    const maghribTime = this.timeToMinutes(this.maghrib);
+    const ishaTime = this.timeToMinutes(this.isha);
+
+    if (currentTime >= fajrTime && currentTime < dhuhrTime) {
+      this.activePrayer = 'fajr';
+    } else if (currentTime >= dhuhrTime && currentTime < asrTime) {
+      this.activePrayer = 'dhuhr';
+    } else if (currentTime >= asrTime && currentTime < maghribTime) {
+      this.activePrayer = 'asr';
+    } else if (currentTime >= maghribTime && currentTime < ishaTime) {
+      this.activePrayer = 'maghrib';
+    } else if (currentTime >= ishaTime || currentTime < fajrTime) {
+      this.activePrayer = 'isha';
+    } else {
+      this.activePrayer = '';
+    }
+  }
+
+  timeToMinutes(timeStr: string): number {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  getPrayerTimeText(prayer: string): string {
+    switch (prayer) {
+      case 'fajr': return 'وقت صلاة الفجر';
+      case 'dhuhr': return 'وقت صلاة الضهر';
+      case 'asr': return 'وقت صلاة العصر';
+      case 'maghrib': return 'وقت صلاة المغرب';
+      case 'isha': return 'وقت صلاة العشاء';
+      default: return '...';
+    }
+  }
 }

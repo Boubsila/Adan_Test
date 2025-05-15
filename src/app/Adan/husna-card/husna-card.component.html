@@ -1,78 +1,67 @@
-<div class="container row m-3 p-3 bg-dark d-flex justify-content-center align-items-center  custom-background">
-
-  <div class="header d-flex justify-content-between align-items-start  ">
-
-    <div class="d-flex flex-column align-items-start bg-primary">
-      <h3 class="text text-white  m-2">{{Hours}}</h3>
-      <h3 class="text text-white  m-2">{{date2}}</h3>
+<div class="dashboard-container">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <!-- Husna Card -->
+    <div class="husna-card">
+      <div class="husna-name">{{ husnaName }}</div>
+      <div class="husna-transliteration">{{ husnaTransliteration }}</div>
+      <div class="husna-meaning">{{ husnaMeaning }}</div>
     </div>
 
-
-    <div class="d-flex flex-column align-items-center bg-primary asameHusna">
-      <h3 class="card-title text-white  m-1">{{name2}}</h3>
-      <h3 class="card-title text-white  m-1">{{transliteration2}}</h3>
-      <h3 class="card-title text-white  m-1">{{meaning2}}</h3>
+    <!-- Location & Active Prayer -->
+    <div class="info-card">
+      <div class="location-selector">
+        <select [(ngModel)]="selectedCity" (change)="onCityChange()" class="city-select">
+          <option *ngFor="let city of cities" [value]="city.value">{{ city.name }}</option>
+        </select>
+        <div class="location-display">
+          <span class="material-icons">location_on</span>
+          {{ selectedCity }}, {{ country }}
+        </div>
+      </div>
+      <div class="current-prayer" [class.active]="activePrayer">
+        {{ getPrayerTimeText(activePrayer) }}
+      </div>
     </div>
 
-  </div>
-
-  <div class="d-flex align-items-center flex-column m-10px">
-    <h4 class="text text-white bg-primary text-center  p-5 "><span>{{hijriYear}} {{hijriWeekday}} {{hijriDay}}
-        {{hijriMonth}}</span></h4>
-  </div>
-
-  <div class="card text-white m-1" style="width: 12rem;"
-    [ngClass]="PrayerTimes() == 'وقت صلاة العشاء' ? 'bg-warning' : 'bg-danger'">
-    <div class="card-body ">
-      <h4 class="card-title text-center m-4">العشاء</h4>
-      <h1 class="card-subtitle mb-2  text-center">{{ isha }}</h1>
-      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة العشاء'">{{istime}}</p>
-
+    <!-- Time & Date -->
+    <div class="time-card">
+      <div class="current-time">{{ currentTime }}</div>
+      <div class="current-date">{{ gregorianDate }}</div>
     </div>
-  </div>
+  </header>
 
-  <div class="card text-white m-1" style="width: 12rem;"
-    [ngClass]="PrayerTimes() == 'وقت صلاة المغرب' ? 'bg-primary' : 'bg-danger'">
-    <div class="card-body ">
-      <h4 class="card-title text-center m-4">المغرب</h4>
-      <h1 class="card-subtitle mb-2  text-center">{{ maghrib }}</h1>
-      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة المغرب'">{{istime}}</p>
+  <!-- Hijri Date -->
+  <section class="hijri-date">
+    <div class="hijri-text">{{ hijriDate }}</div>
+  </section>
 
+  <!-- Prayer Grid -->
+  <section class="prayer-grid">
+    <div class="prayer-card" [class.active]="activePrayer === 'fajr'">
+      <div class="prayer-name">الفجر</div>
+      <div class="prayer-time">{{ fajr }}</div>
+      <div *ngIf="activePrayer === 'fajr'" class="prayer-indicator"></div>
     </div>
-  </div>
-
-
-  <div class="card text-white m-1" style="width: 12rem;"
-    [ngClass]="PrayerTimes() == 'وقت صلاة العصر' ? 'bg-primary' : 'bg-danger'">
-    <div class="card-body ">
-      <h4 class="card-title text-center m-4">العصر</h4>
-      <h1 class="card-subtitle mb-2  text-center">{{ asr }}</h1>
-      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة العصر'">{{istime}}</p>
-
+    <div class="prayer-card" [class.active]="activePrayer === 'dhuhr'">
+      <div class="prayer-name">الضهر</div>
+      <div class="prayer-time">{{ dhuhr }}</div>
+      <div *ngIf="activePrayer === 'dhuhr'" class="prayer-indicator"></div>
     </div>
-  </div>
-
-  <div class="card text-white m-1" style="width: 12rem;"
-    [ngClass]="PrayerTimes() == 'وقت صلاة الضهر' ? 'bg-primary' : 'bg-danger'">
-    <div class="card-body ">
-      <h4 class="card-title text-center m-4">الضهر</h4>
-      <h1 class="card-subtitle mb-2  text-center">{{ dhuhr }}</h1>
-      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة الضهر'">{{istime}}</p>
-
+    <div class="prayer-card" [class.active]="activePrayer === 'asr'">
+      <div class="prayer-name">العصر</div>
+      <div class="prayer-time">{{ asr }}</div>
+      <div *ngIf="activePrayer === 'asr'" class="prayer-indicator"></div>
     </div>
-  </div>
-  <div class="card text-white m-2" style="width: 12rem;"
-    [ngClass]="PrayerTimes() == 'وقت صلاة الفجر' ? 'bg-primary' : 'bg-danger'">
-    <div class="card-body ">
-      <h4 class="card-title text-center m-4">الفجر</h4>
-      <h1 class="card-subtitle mb-2  text-center">{{ fajr }}</h1>
-      <p class="card-text text-center" *ngIf="PrayerTimes()=='وقت صلاة الفجر'">{{istime}}</p>
-
+    <div class="prayer-card" [class.active]="activePrayer === 'maghrib'">
+      <div class="prayer-name">المغرب</div>
+      <div class="prayer-time">{{ maghrib }}</div>
+      <div *ngIf="activePrayer === 'maghrib'" class="prayer-indicator"></div>
     </div>
-  </div>
-
-
-
-
-
+    <div class="prayer-card" [class.active]="activePrayer === 'isha'">
+      <div class="prayer-name">العشاء</div>
+      <div class="prayer-time">{{ isha }}</div>
+      <div *ngIf="activePrayer === 'isha'" class="prayer-indicator"></div>
+    </div>
+  </section>
 </div>
